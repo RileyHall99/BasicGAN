@@ -1,0 +1,65 @@
+**Intro to GANS**
+
+Adversial competition between two Neural Networks (Generator and the Discriminator)
+
+x:Real data
+z:Latent vector
+G(z):Fake data
+D(x):Discriminator's evaluation of real data
+D(G(z)):Discriminator's evaluation of fake data
+Error(a,b):Error between a and b
+
+
+*Discriminator*
+Cross Entropy can be referenced in creating 
+
+
+LD=Error(D(x),1)+Error(D(G(z)),0)
+
+Loss == Error of Discriminator's evaluation of real data + Error of Discriminator's evaluation of fake data.
+
+
+ 
+ 
+**Cross Entropy** 
+
+    ranges from 0 to 1 with lower being better get the model as close to 0 as possible
+
+**To Train any of the Models Discriminator or Generator we assume the other one is fixed** ==> Meaning it is currently not getting trained (Not getting better)
+
+Generative AI
+
+Stable Diffusion
+
+    -https://huggingface.co/learn/computer-vision-course/unit5/generative-models/gans-vaes/stylegan
+
+**A Mapping Network**
+
+
+**Serrano Academy** ==> A friendly introduction to Genrative Adversial Networks (GAN) https://www.youtube.com/watch?v=8L11aMN5KY8 https://github.com/luisguiserrano/gans
+
+**Discriminator**
+Sample slanted people any image that has a more than 1 total is a face and any other image is noise (sigmoid function)
+
+**Generator**
+
+Input z (0-1) Take a random number between 0 and 1 eg 0.75 and then put it through a sigmoid function and add it to a sqaure. IN the Top left of the square we need high values so 
+add heavier weights and in the top right we need lower values so we hadd lower weights eg +1 for top left and -1 for top right. So the formula will be (z*weight) + weight
+
+Log-Loss error function ==>> Error = -log(prediction) if prediction = 1 (Generator) -log(D(G(z)))
+
+Log-Loss error function ==>> Error = -log(1-prediction) if prediction = 0 (Discriminator) -log(1-D(G(z)))
+
+Backpropagation 
+
+
+
+**IDEA**
+
+**Generator**
+    - Three layers of nodes each representing either red, green or blue (RGB) values.
+    - For each layer there will be x amount of nodes where x = amount of pixels in image. Eg. 16x16 image would be 256 pixels or 256 nodes, or 3*256 = 768 total nodes 
+    - For each node we would need indivdual biases applies and randomized Z values in between 0 and 255 
+
+**Discriminator** 
+    - Same amount of nodes and layers as the Generator 
