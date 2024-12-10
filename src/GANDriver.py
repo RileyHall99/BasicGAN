@@ -1,7 +1,6 @@
 from generator import Generator 
 from Discriminator import Discriminator
 import numpy as np
-import kagglehub as kaggle
 from os import listdir
 import os
 from PIL import Image
@@ -9,26 +8,32 @@ import random
 from matplotlib import pyplot as plt
 import sys
 import json
+import datetime 
+import time
 generational_images = []
 
 # np.set_printoptions(threshold=sys.maxsize)
 
 def parseData():
+    print("here in parse data")
+    
     folder = './bin/trees'
     data = []
     for images in os.listdir(folder):
+        print(f"In first loop ==> {images}")
         if(images.endswith('.png')):
-            img = Image.open(folder+'/'+images).convert('L')
+            img = Image.open(folder+'/'+images)
+            img = img.convert('RGB')
             # print(np.asarray(img))
             arr = np.asarray(img)
-            if(arr.shape == (32,32)):
-                arr = arr.flatten()
+            if(arr.shape == (32,32,3)):
+                # arr = arr.flatten()
                 arr = arr/255
                 data.append(arr)
-
-                # print(np.asarray(img))
-                # exit()
-                print("THIS IS GRAY SCALE" + str(arr.shape))
+            
+            # print(arr.shape)
+            # exit()
+                # print("THIS IS GRAY SCALE" + str(arr.shape))
                 
     return data
 
@@ -56,7 +61,7 @@ def getImages(G : Generator):
 
 def save_data(D : Discriminator , G : Generator):
     data = {"Discriminator_wights" : D.weights.tolist(),
-        "Discriminator_bias" : D.bias,
+        "Discriminator_bias" : D.bias.tolist(),
         "Generator_weights" : G.weights.tolist(),
         "Generator_bias" : G.biases.tolist(),
         }
@@ -75,23 +80,26 @@ def load_data():
 if __name__ == '__main__':
     np.random.seed(42)
     learning_rate = 0.1
-    amount_of_nodes = 1024
+    amount_of_nodes = 32
     data = load_data()
     if(data != None):
         Gweight = np.array(data['Generator_weights'])
         Gbias= np.array(data['Generator_bias'])
         Dweight = np.array(data['Discriminator_wights'])
+        DBias = np.array(data["Discriminator_bias"]) 
+        # DBias = data["Discriminator_bias"]
         G = Generator(amount_of_nodes,learning_rate=learning_rate , weights = Gweight , bias = Gbias)
-        D = Discriminator(amount_of_nodes,learning_rate=learning_rate , weights = Dweight , bias = data["Discriminator_bias"])
+        D = Discriminator(amount_of_nodes,learning_rate=learning_rate , weights = Dweight , bias = DBias)
     else:
         G = Generator(amount_of_nodes,learning_rate=learning_rate)
         D = Discriminator(amount_of_nodes,learning_rate=learning_rate )
-    epochs = 200000
+    epochs = 100
     training_data = parseData()
 # For the error plot
     errors_discriminator = []
     errors_generator = []
-    checks = 20000
+    checks = 10
+
     for epoch in range(epochs):
         
         for tree in training_data:
@@ -103,6 +111,7 @@ if __name__ == '__main__':
             G.z = random.random()
             # print(f"Random Number chosen ==>> {G.z}")
             # Calculate the discriminator error
+            
             errors_discriminator.append(sum(D.error_from_image(tree) + D.error_from_noise(G.z)))
             # print("Errors for discriminator")
             # Calculate the generator error
@@ -110,6 +119,7 @@ if __name__ == '__main__':
             # print("Errors for generator")
             # Build a fake face
             noise = G.forward(G.z)
+            # print(f"This is noise in Driver {noise.shape}")
             # print("Found Noise")
             # Update the discriminator weights from the fake face
             D.update_from_noise(noise)
@@ -121,18 +131,24 @@ if __name__ == '__main__':
         print(f"Generation : {epoch}")
         if(epoch % checks == 0 and epoch >= checks):
             print(f"This is epoch ==> {epoch}")
-            generational_images.append(G.forward(random.random()))
+            rand = random.random()
+            generational_images.append([G.forward(rand) , D.error_from_noise(rand) , G.error(rand,D)])
             # getImages(G)
     generational_images.append(G.forward(random.random()))
     count = checks
+    index = 0
     rows = int(len(generational_images) / 4) + 1 
     fig, axes = plt.subplots(figsize=(10, 10), nrows=rows, ncols=4, sharey=True, sharex=True)
     for ax, img in zip(axes.flatten(), generational_images):
-        ax.set_title(f"Epoch {count}")
+        ax.set_title(f"Epoch {count} Noise Error : {img[1]}")
+        index+=1
         count+=checks
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
-        im = ax.imshow(1-img.reshape((32,32)), cmap='Greys_r')  
+        print(img)
+        # exit()
+        im = ax.imshow(1-img[0].reshape((32,32,3)))  
 
     save_data(D , G)
+    plt.savefig(f'./Notes/rgb_Results/{datetime.datetime.now().strftime("%Y-%m-%d")}_{datetime.datetime.now().strftime("%H-%M-%S")}.png')
     plt.show()

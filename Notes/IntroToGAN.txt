@@ -52,7 +52,9 @@ Log-Loss error function ==>> Error = -log(1-prediction) if prediction = 0 (Discr
 
 Backpropagation 
 
-
+**Activation Function**
+    - This function decides whether a neuron should be activated or not 
+    - This function introduces a sense of non linearity into the system. Otherwise it would behave like a linear regression algorithm 
 
 **IDEA**
 
@@ -63,3 +65,7 @@ Backpropagation
 
 **Discriminator** 
     - Same amount of nodes and layers as the Generator 
+
+
+**Notes switch to RGB**
+    -  need to switch from one array of 1024 to a 1024 3d array 
