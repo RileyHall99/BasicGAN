@@ -93,12 +93,12 @@ if __name__ == '__main__':
     else:
         G = Generator(amount_of_nodes,learning_rate=learning_rate)
         D = Discriminator(amount_of_nodes,learning_rate=learning_rate )
-    epochs = 100
+    epochs = 10000
     training_data = parseData()
 # For the error plot
     errors_discriminator = []
     errors_generator = []
-    checks = 10
+    checks = 1000
 
     for epoch in range(epochs):
         
@@ -108,31 +108,31 @@ if __name__ == '__main__':
             D.update_from_image(tree)
             # print("Finished Update from Image")
             # Pick a random number to generate a fake face
-            G.z = random.random()
+            z = random.random()
             # print(f"Random Number chosen ==>> {G.z}")
             # Calculate the discriminator error
             
-            errors_discriminator.append(sum(D.error_from_image(tree) + D.error_from_noise(G.z)))
+            errors_discriminator.append(sum(D.error_from_image(tree) + D.error_from_noise(z)))
             # print("Errors for discriminator")
             # Calculate the generator error
-            errors_generator.append(G.error(G.z, D))
+            errors_generator.append(G.error(z, D))
             # print("Errors for generator")
             # Build a fake face
-            noise = G.forward(G.z)
+            noise = G.forward(z)
             # print(f"This is noise in Driver {noise.shape}")
             # print("Found Noise")
             # Update the discriminator weights from the fake face
             D.update_from_noise(noise)
             # print("Finished Update from noise ")
             # Update the generator weights from the fake face
-            G.update(G.z, D)
+            G.update(z, D)
             # print("Finished Loop")
             # exit()
         print(f"Generation : {epoch}")
         if(epoch % checks == 0 and epoch >= checks):
             print(f"This is epoch ==> {epoch}")
             rand = random.random()
-            generational_images.append([G.forward(rand) , D.error_from_noise(rand) , G.error(rand,D)])
+            generational_images.append(G.forward(rand))
             # getImages(G)
     generational_images.append(G.forward(random.random()))
     count = checks
@@ -140,14 +140,15 @@ if __name__ == '__main__':
     rows = int(len(generational_images) / 4) + 1 
     fig, axes = plt.subplots(figsize=(10, 10), nrows=rows, ncols=4, sharey=True, sharex=True)
     for ax, img in zip(axes.flatten(), generational_images):
-        ax.set_title(f"Epoch {count} Noise Error : {img[1]}")
+        ax.set_title(f"Epoch {count}")
         index+=1
         count+=checks
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
-        print(img)
+        #print(f"Image size {img[0].shape} and size {img[0].size}")
         # exit()
-        im = ax.imshow(1-img[0].reshape((32,32,3)))  
+        if(img.shape == (32,32,3)):
+            im = ax.imshow(1-img.reshape((32,32,3)))  
 
     save_data(D , G)
     plt.savefig(f'./Notes/rgb_Results/{datetime.datetime.now().strftime("%Y-%m-%d")}_{datetime.datetime.now().strftime("%H-%M-%S")}.png')

@@ -1,10 +1,13 @@
 import numpy as np
 import traceback
+from Error_Reaper import Numpy_Error_Handler as neh
 class Discriminator:
 
 
 
     def __init__(self, n_odes , learning_rate , weights = [] , bias = None):
+        np.seterr(all='raise')
+        self.handler = neh()
         self.nNodes = n_odes 
         # self.weights = np.array(np.random.randn(self.nNodes*self.nNodes))
         # print(f"THIS IS WEIGHTS ==>> {self.weights.shape}")
@@ -29,7 +32,7 @@ class Discriminator:
         
         # result = a/b
         try:
-            return 1.0 / (1.0 + np.exp(self.clip_gradients(-x)))
+            return 1.0 / (1.0 + np.exp(-self.clip_gradients(x)))
         except FloatingPointError:
             x = np.clip(x,-700,700)
             return 1.0 / (1.0 + np.exp(-x))
@@ -84,7 +87,7 @@ class Discriminator:
         return np.log(np.clip(x,epsilon,None))
 
     def error_from_noise(self, noise):
-        np.seterr(all='raise')
+        
         prediction = self.forward(noise)
         # We want the prediction to be 0, so the error is -log(1-prediction)
         try:
