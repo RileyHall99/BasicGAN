@@ -79,7 +79,7 @@ def load_data():
 
 if __name__ == '__main__':
     np.random.seed(42)
-    learning_rate = 0.1
+    learning_rate = 0.00001
     amount_of_nodes = 32
     data = load_data()
     if(data != None):
@@ -93,12 +93,12 @@ if __name__ == '__main__':
     else:
         G = Generator(amount_of_nodes,learning_rate=learning_rate)
         D = Discriminator(amount_of_nodes,learning_rate=learning_rate )
-    epochs = 10000
+    epochs = 50000
     training_data = parseData()
 # For the error plot
     errors_discriminator = []
     errors_generator = []
-    checks = 1000
+    checks = 5000
 
     for epoch in range(epochs):
         
@@ -130,9 +130,10 @@ if __name__ == '__main__':
             # exit()
         print(f"Generation : {epoch}")
         if(epoch % checks == 0 and epoch >= checks):
-            print(f"This is epoch ==> {epoch}")
-            rand = random.random()
-            generational_images.append(G.forward(rand))
+            # print(f"This is epoch ==> {epoch}")
+            # print(f"Loading ==> {checks/epoch}%" , end="\r")
+            
+            generational_images.append(noise)
             # getImages(G)
     generational_images.append(G.forward(random.random()))
     count = checks

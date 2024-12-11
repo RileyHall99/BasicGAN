@@ -27,32 +27,27 @@ class Generator:
                 image[i].append([np.random.randint(256) , np.random.randint(256) , np.random.randint(256)])
         # print(image)
         return image 
-    
-    def clip_gradients(self,gradient , min_val=1e-10,max_val = 1e10):
-        return np.clip(gradient,min_val,max_val)
+
     
     #INFO Activation function 
     def sigmoid(self,x):
-        # return np.exp(x)/(1.0+np.exp(x))
-        # print(f"THis is x ==>> {x}")
-        # exit()
-        # print(f"This is too large {type(x) } aand shape {x.shape}")
         try:
             return 1.0 / (1.0 + np.exp(self.handler.underflow_gradients(-x)))
         except FloatingPointError:
             x = self.handler.overflow_gradients(-x)
             return 1.0 / (1.0 + np.exp(x))
-        # print(f"This is sigmoid results {type(results)} and shape {results.shape}")
         
 
     #This is the function that needs to change to work with RGB values 
+    #INFO Generates a new image to use by using the old data stored in weights and takes in a random value z and puts result(r,g,b) 
+    #INFO results[0] = z(red channel)*weights(red channel) + biases(red channel)
     def forward(self, z):
         # Forward pass
         results = np.empty((32,32,3))
 
         for i in range(3):
             if(type(z) == np.ndarray):
-                results[:,:,i] = self.sigmoid(z[:,:,i] * self.weights[:,:,i] + self.biases[:,:i])
+                results[:,:,i] = self.sigmoid(z[:,:,i] * self.weights[:,:,i] + self.biases[:,:,i])
             else:
                 results[:,:,i] = self.sigmoid(z * self.weights[:,:,i] + self.biases[:,:,i])
 
@@ -67,7 +62,7 @@ class Generator:
         y = discriminator.forward(x)
         result = -np.log(y)
         return result
-
+    #INFO 
     def derivatives(self, z, discriminator):
         discriminator_weights = discriminator.weights
         discriminator_bias = discriminator.bias
@@ -89,10 +84,3 @@ class Generator:
     def display_image(self, image):
         plt.imshow(image)
         plt.show()
-
-    
-# G = Generator(100 , 1.1)
-
-# image = G.generate_image()
-
-# G.display_image(image)
